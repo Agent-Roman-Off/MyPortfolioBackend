@@ -3,10 +3,31 @@ const { db } = require('../conf');
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/2021', async (req, res) => {
   try {
     const [projects] = await db.query(
-      `SELECT id, title, picture, link, date FROM projects ORDER BY date DESC`
+      `SELECT id, title, picture, link, date 
+      FROM projects 
+      WHERE date BETWEEN '2021-01-01' AND '2021-12-31' 
+      ORDER BY date DESC`
+    );
+    if (projects.length) {
+      res.status(200).json(projects);
+    } else {
+      res.status(404).send('Projects not found');
+    }
+  } catch (err) {
+    res.status(500).send('Error retrieving the projects');
+  }
+});
+
+router.get('/2022', async (req, res) => {
+  try {
+    const [projects] = await db.query(
+      `SELECT id, title, picture, link, date 
+      FROM projects
+      WHERE date BETWEEN '2022-01-01' AND '2022-12-31'
+      ORDER BY date DESC`
     );
     if (projects.length) {
       res.status(200).json(projects);

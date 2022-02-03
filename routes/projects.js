@@ -39,18 +39,33 @@ router.get('/2022', async (req, res) => {
   }
 });
 
+router.get('/2023', async (req, res) => {
+  try {
+    const [projects] = await db.query(
+      `SELECT id, title, picture, link, date 
+      FROM projects
+      WHERE date BETWEEN '2023-01-01' AND '2023-12-31'
+      ORDER BY date DESC`
+    );
+    if (projects.length) {
+      res.status(200).json(projects);
+    } else {
+      res.status(404).send('Projects not found');
+    }
+  } catch (err) {
+    res.status(500).send('Error retrieving the projects');
+  }
+});
+
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const [project] = await db.query(
-      `SELECT id, title, picture, link, date FROM projects WHERE id = ?`,
+      `SELECT id, title, picture, link, date, nbrPeople, timeLimit FROM projects WHERE id = ?`,
       [id]
     );
-    if (project.length) {
-      res.status(200).json(project);
-    } else {
-      res.status(404).send('Project not found');
-    }
+
+    res.status(200).json(project);
   } catch (err) {
     res.status(500).send('Error retrieving the project');
   }
@@ -58,10 +73,10 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { title, picture, link, date } = req.body;
+    const { title, picture, link, date, nbrPeople, timeLimit } = req.body;
     await db.query(
-      `INSERT INTO projects (title, picture, link, date) VALUES (?, ?, ?, ?)`,
-      [title, picture, link, date]
+      `INSERT INTO projects (title, picture, link, date, nbrPeople, timeLimit) VALUES (?, ?, ?, ?, ?, ?)`,
+      [title, picture, link, date, nbrPeople, timeLimit]
     );
     res.status(201).send('Project created');
   } catch (err) {
@@ -72,10 +87,10 @@ router.post('/', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    await db.query(`DELETE FROM comments WHERE id = ?`, [id]);
+    await db.query(`DELETE FROM projects WHERE id = ?`, [id]);
     res.status(200).send('Comment succesfully deleted');
   } catch (err) {
-    res.status(500).send('Error deleting the comment');
+    res.status(500).send('Error deleting the project');
   }
 });
 

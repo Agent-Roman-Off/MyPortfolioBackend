@@ -57,15 +57,25 @@ router.get('/2023', async (req, res) => {
   }
 });
 
+// FOR LANG CHANGES
+
 router.get('/:id', async (req, res) => {
   try {
+    const lan = req.query.language;
     const { id } = req.params;
     const [project] = await db.query(
-      `SELECT id, title, picture, link, date, nbrPeople, timeLimit FROM projects WHERE id = ?`,
-      [id]
+      `SELECT projects.id, title, picture, link, date, nbrPeople, timeLimit, description, language
+      FROM projects
+      INNER JOIN contents ON projects.id = contents.idProjects
+      WHERE idProjects = ? AND language = ?`,
+      [id, lan]
     );
 
-    res.status(200).json(project);
+    if (project.length) {
+      res.status(200).json(project);
+    } else {
+      res.status(404).send('Project not found');
+    }
   } catch (err) {
     res.status(500).send('Error retrieving the project');
   }
